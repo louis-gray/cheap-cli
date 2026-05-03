@@ -1,12 +1,15 @@
-"""Resolve configuration from CLI flags > env vars > defaults."""
+"""Resolve configuration from CLI flags > env vars > Keychain (macOS) > defaults."""
 from __future__ import annotations
 
 import os
+import platform
+import subprocess
 from dataclasses import dataclass
 
 DEFAULT_MODEL = "deepseek/deepseek-v4-flash"
 DEFAULT_LOG_PATH = "~/.local/share/cheap-cli/usage.jsonl"
 DEFAULT_TIMEOUT = 120
+DEFAULT_KEYCHAIN_SERVICE = "openrouter"
 VALID_REASONING = ("low", "medium", "high", "xhigh")
 
 
@@ -23,13 +26,44 @@ class Config:
     timeout: int
 
 
+def _try_keychain() -> str | None:
+    """macOS Keychain fallback. Returns None on non-macOS or any failure.
+
+    Service name defaults to 'openrouter' (override with CHEAP_KEYCHAIN_SERVICE).
+    Account name is the current user (override with CHEAP_KEYCHAIN_ACCOUNT).
+    """
+    if platform.system() != "Darwin":
+        return None
+    service = os.environ.get("CHEAP_KEYCHAIN_SERVICE", DEFAULT_KEYCHAIN_SERVICE)
+    account = os.environ.get("CHEAP_KEYCHAIN_ACCOUNT") or os.environ.get("USER", "")
+    if not account:
+        return None
+    try:
+        result = subprocess.run(
+            ["security", "find-generic-password", "-a", account, "-s", service, "-w"],
+            capture_output=True,
+            text=True,
+            timeout=5,
+        )
+    except (FileNotFoundError, subprocess.TimeoutExpired):
+        return None
+    if result.returncode != 0:
+        return None
+    key = result.stdout.strip()
+    return key or None
+
+
 def resolve(
     *,
     cli_api_key: str | None = None,
     cli_model: str | None = None,
     cli_reasoning: str | None = None,
 ) -> Config:
-    api_key = cli_api_key or os.environ.get("OPENROUTER_API_KEY")
+    api_key = (
+        cli_api_key
+        or os.environ.get("OPENROUTER_API_KEY")
+        or _try_keychain()
+    )
     if not api_key:
         raise ConfigError("OPENROUTER_API_KEY not set")
 

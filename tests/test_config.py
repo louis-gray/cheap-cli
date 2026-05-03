@@ -1,11 +1,27 @@
 import pytest
+from cheap_cli import _config
 from cheap_cli._config import resolve, ConfigError, DEFAULT_MODEL
 
 
 def test_missing_api_key_raises(monkeypatch):
     monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
+    monkeypatch.setattr(_config, "_try_keychain", lambda: None)
     with pytest.raises(ConfigError, match="OPENROUTER_API_KEY not set"):
         resolve()
+
+
+def test_keychain_fallback_used_when_env_missing(monkeypatch):
+    monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
+    monkeypatch.setattr(_config, "_try_keychain", lambda: "sk-from-keychain")
+    cfg = resolve()
+    assert cfg.api_key == "sk-from-keychain"
+
+
+def test_env_beats_keychain(monkeypatch):
+    monkeypatch.setenv("OPENROUTER_API_KEY", "sk-from-env")
+    monkeypatch.setattr(_config, "_try_keychain", lambda: "sk-from-keychain")
+    cfg = resolve()
+    assert cfg.api_key == "sk-from-env"
 
 
 def test_env_only_uses_defaults(monkeypatch):

@@ -25,6 +25,13 @@ For more secure key storage on macOS, store in Keychain instead:
 
 ```fish
 security add-generic-password -a $USER -s openrouter -U -w   # paste key at prompt
+```
+
+That's it. When `OPENROUTER_API_KEY` is not in env, the tools query Keychain automatically (account = `$USER`, service = `openrouter`). Override with `CHEAP_KEYCHAIN_ACCOUNT` / `CHEAP_KEYCHAIN_SERVICE` if needed. Works in any shell, including Claude Code's bash subprocesses.
+
+If you'd rather have it in env (faster — skips a subprocess on each call):
+
+```fish
 echo 'set -gx OPENROUTER_API_KEY (security find-generic-password -a $USER -s openrouter -w 2>/dev/null)' > ~/.config/fish/conf.d/openrouter.fish
 ```
 
