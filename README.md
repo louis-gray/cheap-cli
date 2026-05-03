@@ -1,18 +1,18 @@
 # cheap-cli
 
-Three CLI tools that delegate I/O-heavy, low-reasoning tasks to a cheap LLM (DeepSeek V4 Flash via OpenRouter, ~100x cheaper than Claude Opus). Designed to be called by Claude Code via Bash, but useful standalone.
+Three CLI tools that delegate I/O-heavy, low-reasoning tasks to a cheap LLM (DeepSeek V4 Flash via OpenRouter, ~36x cheaper than Claude Opus on input). Designed to be called by Claude Code via Bash, but useful standalone.
 
 ## Why
 
 Claude Code burns through usage limits on tasks that don't need its reasoning: reading dozens of files to answer one question, generating boilerplate, summarising long logs. These tools offload that work.
 
-| Model | Input $/M tokens |
-|-|-|
-| Claude Opus 4.7 | $15.00 |
-| Claude Sonnet 4.6 | $3.00 |
-| DeepSeek V4 Flash | $0.14 |
+| Model | Input $/M | Output $/M |
+|-|-|-|
+| Claude Opus 4.7 | $5.00 | $25.00 |
+| Claude Sonnet 4.6 | $3.00 | $15.00 |
+| DeepSeek V4 Flash | $0.14 | $0.28 |
 
-V4 Flash also has a 1M-token context, so even big repo sweeps fit.
+Caveat: Anthropic's prompt caching cuts effective Opus input to ~$1.49/M (74-94% cache hit rate typical), so the realised gap is closer to ~10x. Output is where the savings concentrate (90x cheaper). V4 Flash also has a 1M-token context, so even big repo sweeps fit.
 
 ## Install
 
