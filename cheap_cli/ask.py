@@ -66,3 +66,7 @@ def main() -> int:
         print(f"cheap-cli: {e}", file=sys.stderr)
         return 2
     return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
