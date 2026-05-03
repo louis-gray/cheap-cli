@@ -1,6 +1,5 @@
-import os
 import pytest
-from cheap_cli._config import resolve, Config, ConfigError, DEFAULT_MODEL
+from cheap_cli._config import resolve, ConfigError, DEFAULT_MODEL
 
 
 def test_missing_api_key_raises(monkeypatch):
