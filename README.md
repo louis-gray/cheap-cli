@@ -134,9 +134,14 @@ debugging, security-critical code, or anything where wrong > slow.
 
 - ask-cheap "<question>" <files>     reading >2 files or >500 lines just
                                      to answer one factual question
-- write-cheap "<description>"        boilerplate: tests, fixtures, fish/bash
-                                     completions, repetitive configs, simple
-                                     CRUD scaffolds
+- write-cheap "<description>"        boilerplate (tests, fixtures, fish/bash
+                                     completions, repetitive configs, CRUD
+                                     scaffolds). Also doc transcription when
+                                     output will be >500 words AND source is
+                                     structured (CHANGELOG entries, API refs,
+                                     runbook updates). Not for nuanced prose,
+                                     decision capture, or voice-sensitive
+                                     notes (vault, daily notes, commit msgs).
 - summarize-cheap <file|->           long logs, vendor docs, RFCs where
                                      only the gist matters
 
