@@ -16,26 +16,81 @@ Caveat: Anthropic's prompt caching cuts effective Opus input to ~$1.49/M (74-94%
 
 ## Install
 
-```fish
+Requires Python 3.11+ and [uv](https://docs.astral.sh/uv/).
+
+```sh
 uv tool install --from git+https://github.com/grayscaled-dev/cheap-cli cheap-cli
-set -Ux OPENROUTER_API_KEY sk-or-v1-...
-```
-
-For more secure key storage on macOS, store in Keychain instead:
-
-```fish
-security add-generic-password -a $USER -s openrouter -U -w   # paste key at prompt
-```
-
-That's it. When `OPENROUTER_API_KEY` is not in env, the tools query Keychain automatically (account = `$USER`, service = `openrouter`). Override with `CHEAP_KEYCHAIN_ACCOUNT` / `CHEAP_KEYCHAIN_SERVICE` if needed. Works in any shell, including Claude Code's bash subprocesses.
-
-If you'd rather have it in env (faster — skips a subprocess on each call):
-
-```fish
-echo 'set -gx OPENROUTER_API_KEY (security find-generic-password -a $USER -s openrouter -w 2>/dev/null)' > ~/.config/fish/conf.d/openrouter.fish
 ```
 
 Three executables land on `PATH`: `ask-cheap`, `write-cheap`, `summarize-cheap`.
+
+### API key
+
+Get a key from [openrouter.ai/settings/keys](https://openrouter.ai/settings/keys). Pick one of the setups below — the tools check env first, then the OS keystore.
+
+#### macOS
+
+Store in Keychain (recommended):
+
+```sh
+security add-generic-password -a "$USER" -s openrouter -U -w   # paste key at prompt
+```
+
+That's it. The tools fall back to Keychain automatically when `OPENROUTER_API_KEY` is unset.
+
+For slightly faster invocation (avoids a subprocess per call), also export at shell start:
+
+```fish
+# fish
+echo 'set -gx OPENROUTER_API_KEY (security find-generic-password -a $USER -s openrouter -w 2>/dev/null)' > ~/.config/fish/conf.d/openrouter.fish
+```
+
+```bash
+# bash/zsh
+echo 'export OPENROUTER_API_KEY=$(security find-generic-password -a "$USER" -s openrouter -w 2>/dev/null)' >> ~/.bashrc
+```
+
+#### Linux
+
+Store in libsecret (gnome-keyring, KWallet, or any Secret Service provider). Install if needed:
+
+```sh
+sudo pacman -S libsecret           # Arch / CachyOS
+sudo apt install libsecret-tools   # Debian / Ubuntu
+sudo dnf install libsecret         # Fedora
+```
+
+Then store the key:
+
+```sh
+echo -n 'sk-or-v1-...' | secret-tool store --label='OpenRouter' service openrouter account "$USER"
+```
+
+The tools fall back to libsecret automatically. Headless servers without an unlocked keyring should use the env-var path instead:
+
+```sh
+# in ~/.bashrc or ~/.config/fish/conf.d/openrouter.fish
+export OPENROUTER_API_KEY='sk-or-v1-...'
+```
+
+#### Windows
+
+Set as a persistent user environment variable in PowerShell:
+
+```powershell
+[Environment]::SetEnvironmentVariable('OPENROUTER_API_KEY', 'sk-or-v1-...', 'User')
+```
+
+Restart your terminal to pick it up. For Credential Manager integration, set the env var in your PowerShell profile from the stored credential — the tools don't auto-fetch from Credential Manager since it has no uniform CLI like `security` or `secret-tool`.
+
+### Override account/service
+
+Both keystore lookups default to `account = $USER`, `service = openrouter`. Override per-call or globally:
+
+```sh
+export CHEAP_KEYCHAIN_ACCOUNT=alt-user
+export CHEAP_KEYCHAIN_SERVICE=openrouter-work
+```
 
 ## Usage
 
@@ -73,9 +128,9 @@ Append this to `~/.claude/CLAUDE.md`:
 # Cheap-model delegation
 
 Three CLI tools route to a cheap, large-context model (DeepSeek V4 Flash via
-OpenRouter, ~100x cheaper than Opus). Use them for I/O-heavy, low-reasoning
-tasks. Never for architecture, debugging, security-critical code, or anything
-where wrong > slow.
+OpenRouter, ~36x cheaper than Opus on input list price, ~10x with caching).
+Use them for I/O-heavy, low-reasoning tasks. Never for architecture,
+debugging, security-critical code, or anything where wrong > slow.
 
 - ask-cheap "<question>" <files>     reading >2 files or >500 lines just
                                      to answer one factual question
