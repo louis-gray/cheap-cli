@@ -33,11 +33,14 @@ def main() -> int:
         print("cheap-cli: no readable input", file=sys.stderr)
         return 1
 
-    body = [args.question, ""]
+    # Files first, question last — keeps the large stable corpus at the prompt
+    # prefix so OpenRouter's implicit caching can reuse it across queries.
+    body: list[str] = []
     for label, content in inputs:
         body.append(f"=== {label} ===")
         body.append(content)
         body.append("")
+    body.append(f"Question: {args.question}")
     user = "\n".join(body)
 
     estimated = _io.estimate_tokens(user)

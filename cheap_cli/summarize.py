@@ -39,17 +39,20 @@ def main() -> int:
         print("cheap-cli: no readable input", file=sys.stderr)
         return 1
 
-    instructions = []
-    if args.bullets:
-        instructions.append(f"Reply as exactly {args.bullets} bullet points.")
-    if args.max_words:
-        instructions.append(f"Use at most {args.max_words} words total.")
-    instructions.append("Content follows:")
-    body = ["\n".join(instructions), ""]
+    # Files first, instructions last — keeps the large stable corpus at the
+    # prompt prefix so OpenRouter's implicit caching can reuse it across queries.
+    body: list[str] = []
     for label, content in inputs:
         body.append(f"=== {label} ===")
         body.append(content)
         body.append("")
+    instructions: list[str] = []
+    if args.bullets:
+        instructions.append(f"Reply as exactly {args.bullets} bullet points.")
+    if args.max_words:
+        instructions.append(f"Use at most {args.max_words} words total.")
+    instructions.append("Summarise the content above.")
+    body.append("\n".join(instructions))
     user = "\n".join(body)
 
     estimated = _io.estimate_tokens(user)
