@@ -99,14 +99,21 @@ export CHEAP_KEYCHAIN_SERVICE=openrouter-work
 ask-cheap "where is auth handled?" src/**/*.py
 ask-cheap "what changed in this diff?" - < /tmp/patch.diff
 
+# Read a web URL — vendor docs, blog posts, RFCs, GitHub issues
+ask-cheap "what's the rate limit on this API?" https://docs.example.com/limits
+ask-cheap "summarise the design decisions" https://github.com/foo/bar/issues/123
+
 # Generate boilerplate to stdout
 write-cheap "pytest fixture for an authenticated FastAPI client"
 write-cheap --lang fish "completion for foo --bar --baz" > completions/foo.fish
 
-# Summarise a doc/log
+# Summarise a doc/log/url
 summarize-cheap ci.log
 go test -v ./... | summarize-cheap --bullets 5
+summarize-cheap https://example.com/long-rfc.html --bullets 8
 ```
+
+URL handling: HTTP(S) URLs are fetched directly. HTML is stripped to plain text via tag-removal — works well for static docs (most vendor sites, GitHub, Markdown-rendered pages). SPAs that render client-side return mostly nav cruft; use Claude's WebFetch for those.
 
 ## Configuration
 
@@ -129,24 +136,36 @@ Append this to `~/.claude/CLAUDE.md`:
 
 Three CLI tools route to a cheap, large-context model (DeepSeek V4 Flash via
 OpenRouter, ~36x cheaper than Opus on input list price, ~10x with caching).
-Use them for I/O-heavy, low-reasoning tasks. Never for architecture,
-debugging, security-critical code, or anything where wrong > slow.
+**Default to delegation** for I/O-heavy, low-reasoning tasks. Skip only for
+architecture, debugging, security-critical code, or anything where wrong > slow.
 
-- ask-cheap "<question>" <files>     reading >2 files or >500 lines just
-                                     to answer one factual question
-- write-cheap "<description>"        boilerplate (tests, fixtures, fish/bash
-                                     completions, repetitive configs, CRUD
-                                     scaffolds). Also doc transcription when
-                                     output will be >500 words AND source is
-                                     structured (CHANGELOG entries, API refs,
-                                     runbook updates). Not for nuanced prose,
-                                     decision capture, or voice-sensitive
-                                     notes (vault, daily notes, commit msgs).
-- summarize-cheap <file|->           long logs, vendor docs, RFCs where
-                                     only the gist matters
+- ask-cheap "<question>" <files-or-urls>  reading >2 files / >500 lines, OR
+                                          any web URL (vendor docs, blog
+                                          posts, RFCs, GitHub issues). The
+                                          tool fetches HTTP(S) URLs and
+                                          strips HTML automatically.
+- write-cheap "<description>"             boilerplate (tests, fixtures,
+                                          fish/bash completions, repetitive
+                                          configs, CRUD scaffolds). Also doc
+                                          transcription when output will be
+                                          >500 words AND source is structured
+                                          (CHANGELOG entries, API refs,
+                                          runbook updates). Not for nuanced
+                                          prose, decision capture, or voice-
+                                          sensitive notes (vault, daily
+                                          notes, commit msgs).
+- summarize-cheap <file|url|->            long logs, vendor docs, RFCs where
+                                          only the gist matters
 
-Pass file paths, not file contents - the tools read disk themselves.
-If output looks wrong, fall back to doing the work yourself.
+**Default delegation triggers — use cheap-cli unless the task needs reasoning:**
+- Reading any URL for research, vendor docs, or API references → ask-cheap
+- Looking up one fact across multiple files → ask-cheap
+- Skimming a long log/output for the gist → summarize-cheap
+- Generating any boilerplate >20 lines → write-cheap
+
+Prefer Claude's WebFetch only for SPAs / dynamic pages where ask-cheap returns
+mostly nav cruft. Pass paths and URLs, not contents — the tools fetch/read
+themselves. If output looks wrong, fall back to doing the work yourself.
 ```
 
 ## Privacy & limits
