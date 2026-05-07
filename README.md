@@ -1,5 +1,7 @@
 # cheap-cli
 
+[![tests](https://github.com/louis-gray/cheap-cli/actions/workflows/tests.yml/badge.svg)](https://github.com/louis-gray/cheap-cli/actions/workflows/tests.yml) [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE) [![Python](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/)
+
 Three CLI tools that delegate I/O-heavy, low-reasoning tasks to a cheap LLM (DeepSeek V4 Flash via OpenRouter, ~36x cheaper than Claude Opus on input). Designed to be called by Claude Code via Bash, but useful standalone.
 
 ## Why
@@ -23,6 +25,15 @@ uv tool install --from git+https://github.com/louis-gray/cheap-cli cheap-cli
 ```
 
 Three executables land on `PATH`: `ask-cheap`, `write-cheap`, `summarize-cheap`.
+
+### Quick check
+
+```sh
+$ ask-cheap "in one sentence, what does this CLI tool do?" cheap_cli/ask.py
+The CLI tool reads files and answers a question using a cheap LLM.
+```
+
+That call: 681 prompt tokens, 141 completion tokens, ~4 seconds, **$0.00013**. The same prompt sent to Claude Opus 4.7 (no cache) runs ~$0.007 — about 50x more.
 
 ### API key
 
