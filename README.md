@@ -1,6 +1,6 @@
 # cheap-cli
 
-[![tests](https://github.com/louis-gray/cheap-cli/actions/workflows/tests.yml/badge.svg)](https://github.com/louis-gray/cheap-cli/actions/workflows/tests.yml) [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE) [![Python](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/)
+[![tests](https://img.shields.io/github/actions/workflow/status/louis-gray/cheap-cli/tests.yml?branch=main&style=for-the-badge&logo=github&label=tests)](https://github.com/louis-gray/cheap-cli/actions/workflows/tests.yml) [![License](https://img.shields.io/github/license/louis-gray/cheap-cli?style=for-the-badge)](LICENSE) [![Python](https://img.shields.io/badge/python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 
 Three CLI tools that delegate I/O-heavy, low-reasoning tasks to a cheap LLM (DeepSeek V4 Flash via OpenRouter, ~36x cheaper than Claude Opus on input). Designed to be called by Claude Code via Bash, but useful standalone.
 
