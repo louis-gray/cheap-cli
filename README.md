@@ -19,7 +19,7 @@ Caveat: Anthropic's prompt caching cuts effective Opus input to ~$1.49/M (74-94%
 Requires Python 3.11+ and [uv](https://docs.astral.sh/uv/).
 
 ```sh
-uv tool install --from git+https://github.com/grayscaled-dev/cheap-cli cheap-cli
+uv tool install --from git+https://github.com/louis-gray/cheap-cli cheap-cli
 ```
 
 Three executables land on `PATH`: `ask-cheap`, `write-cheap`, `summarize-cheap`.

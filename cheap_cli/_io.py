@@ -45,7 +45,7 @@ def fetch_url(url: str, timeout: int = 30) -> tuple[str, str]:
         url,
         follow_redirects=True,
         timeout=timeout,
-        headers={"User-Agent": "cheap-cli/0.1 (+https://github.com/grayscaled-dev/cheap-cli)"},
+        headers={"User-Agent": "cheap-cli/0.1 (+https://github.com/louis-gray/cheap-cli)"},
     )
     resp.raise_for_status()
     body = resp.text

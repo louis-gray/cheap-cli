@@ -81,7 +81,7 @@ def stream_chat(
     headers = {
         "Authorization": f"Bearer {cfg.api_key}",
         "Content-Type": "application/json",
-        "HTTP-Referer": "https://github.com/grayscaled-dev/cheap-cli",
+        "HTTP-Referer": "https://github.com/louis-gray/cheap-cli",
         "X-Title": "cheap-cli",
     }
 
