@@ -1,4 +1,4 @@
-"""ask-cheap: read files, answer a question via cheap LLM."""
+"""ask-cheap: answer a question, optionally with file/URL context."""
 from __future__ import annotations
 
 import argparse
@@ -10,10 +10,14 @@ from . import _client, _config, _io, _prompts
 def main() -> int:
     parser = argparse.ArgumentParser(
         prog="ask-cheap",
-        description="Read files and answer a question using a cheap LLM.",
+        description="Answer a question using a cheap LLM. Optionally attach files or URLs as context.",
     )
     parser.add_argument("question", help="The question to answer")
-    parser.add_argument("files", nargs="+", help="File paths or '-' for stdin")
+    parser.add_argument(
+        "files",
+        nargs="*",
+        help="Optional file paths, URLs, or '-' for stdin",
+    )
     parser.add_argument("--model", help="Override CHEAP_MODEL")
     parser.add_argument(
         "--reasoning",
@@ -28,20 +32,24 @@ def main() -> int:
         print(f"cheap-cli: {e}", file=sys.stderr)
         return 1
 
-    inputs = _io.read_inputs(args.files)
-    if not inputs:
+    inputs = _io.read_inputs(args.files) if args.files else []
+    if args.files and not inputs:
         print("cheap-cli: no readable input", file=sys.stderr)
         return 1
 
-    # Files first, question last — keeps the large stable corpus at the prompt
-    # prefix so OpenRouter's implicit caching can reuse it across queries.
-    body: list[str] = []
-    for label, content in inputs:
-        body.append(f"=== {label} ===")
-        body.append(content)
-        body.append("")
-    body.append(f"Question: {args.question}")
-    user = "\n".join(body)
+    if inputs:
+        # Files first, question last — keeps the large stable corpus at the
+        # prompt prefix so OpenRouter's implicit caching can reuse it across
+        # queries.
+        body: list[str] = []
+        for label, content in inputs:
+            body.append(f"=== {label} ===")
+            body.append(content)
+            body.append("")
+        body.append(f"Question: {args.question}")
+        user = "\n".join(body)
+    else:
+        user = args.question
 
     estimated = _io.estimate_tokens(user)
     context_limit = 1_000_000 if "v4" in cfg.model else 128_000

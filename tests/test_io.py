@@ -66,6 +66,10 @@ def test_read_inputs_mixed(tmp_path):
     assert out == [(str(p), "A")]
 
 
+def test_read_inputs_empty():
+    assert read_inputs([]) == []
+
+
 def test_is_url():
     assert is_url("https://example.com") is True
     assert is_url("http://example.com") is True
